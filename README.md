@@ -1,4 +1,5 @@
 ## Introduction
+This is a clone of [TensorFlow template](https://github.com/tobegit3hub/tensorflow_template_application/issues)
 
 It is the generic golden program for deep learning with [TensorFlow](https://github.com/tensorflow/tensorflow).
 
