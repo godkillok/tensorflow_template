@@ -107,78 +107,8 @@ def restore_from_checkpoint(sess, saver, checkpoint):
     return False
 
 
+
 def build_model_columns():
-  """Builds a set of wide and deep feature columns."""
-  # Continuous columns
-  age = tf.feature_column.numeric_column('age')
-  education_num = tf.feature_column.numeric_column('education_num')
-  capital_gain = tf.feature_column.numeric_column('capital_gain')
-  capital_loss = tf.feature_column.numeric_column('capital_loss')
-  hours_per_week = tf.feature_column.numeric_column('hours_per_week')
-
-  education = tf.feature_column.categorical_column_with_vocabulary_list(
-      'education', [
-          'Bachelors', 'HS-grad', '11th', 'Masters', '9th', 'Some-college',
-          'Assoc-acdm', 'Assoc-voc', '7th-8th', 'Doctorate', 'Prof-school',
-          '5th-6th', '10th', '1st-4th', 'Preschool', '12th'])
-
-  marital_status = tf.feature_column.categorical_column_with_vocabulary_list(
-      'marital_status', [
-          'Married-civ-spouse', 'Divorced', 'Married-spouse-absent',
-          'Never-married', 'Separated', 'Married-AF-spouse', 'Widowed'])
-
-  relationship = tf.feature_column.categorical_column_with_vocabulary_list(
-      'relationship', [
-          'Husband', 'Not-in-family', 'Wife', 'Own-child', 'Unmarried',
-          'Other-relative'])
-
-  workclass = tf.feature_column.categorical_column_with_vocabulary_list(
-      'workclass', [
-          'Self-emp-not-inc', 'Private', 'State-gov', 'Federal-gov',
-          'Local-gov', '?', 'Self-emp-inc', 'Without-pay', 'Never-worked'])
-
-  # To show an example of hashing:
-  occupation = tf.feature_column.categorical_column_with_hash_bucket(
-      'occupation', hash_bucket_size=1000)
-
-  # Transformations.
-  age_buckets = tf.feature_column.bucketized_column(
-      age, boundaries=[18, 25, 30, 35, 40, 45, 50, 55, 60, 65])
-
-  # Wide columns and deep columns.
-  base_columns = [
-      education, marital_status, relationship, workclass, occupation,
-      age_buckets,
-  ]
-
-  crossed_columns = [
-      tf.feature_column.crossed_column(
-          ['education', 'occupation'], hash_bucket_size=1000),
-      tf.feature_column.crossed_column(
-          [age_buckets, 'education', 'occupation'], hash_bucket_size=1000),
-  ]
-
-  wide_columns = base_columns + crossed_columns
-
-  deep_columns = [
-      age,
-      education_num,
-      capital_gain,
-      capital_loss,
-      hours_per_week,
-      tf.feature_column.indicator_column(workclass),
-      tf.feature_column.indicator_column(education),
-      tf.feature_column.indicator_column(marital_status),
-      tf.feature_column.indicator_column(relationship),
-      # To show an example of embedding
-      tf.feature_column.embedding_column(occupation, dimension=8),
-  ]
-  label = tf.feature_column.categorical_column_with_vocabulary_list(
-      "income_bracket", [">50K", "<=50K"])
-
-  return wide_columns, deep_columns,[label]
-
-def build_model_columns2():
     """Builds a set of wide and deep feature columns."""
     # Continuous columns
     age = tf.feature_column.numeric_column('age')
@@ -253,15 +183,15 @@ def read_and_decode_tfrecords(filename_queue):
     reader = tf.TFRecordReader()
     _, serialized_example = reader.read(filename_queue)
 
-    wide_columns, deep_columns,label_columns = build_model_columns2()
+    wide_columns, deep_columns,label_columns = build_model_columns()
     # embedding_initializer=tf.contrib.framework.load_embedding_initializer(
     #       ckpt_path='C:/work/tensorflow_template/log/model.ckpt')
-
+    # main change load pretrain model into it
     from tensorflow.python import pywrap_tensorflow
     model_dir = 'C:/work/tensorflow_template/log/model.ckpt'
     checkpoint_path = model_dir
     reader = pywrap_tensorflow.NewCheckpointReader(checkpoint_path)
-    aa = reader.get_tensor('embeddings/Variable')
+    pretrain_embeddding = reader.get_tensor('embeddings/Variable')
 
     examples = tf.parse_single_example(
         serialized_example,
@@ -295,7 +225,7 @@ def read_and_decode_tfrecords(filename_queue):
         examples,
         batch_size=FLAGS.batch_size,
         dynamic_pad=True)
-    item2vec = tf.nn.embedding_lookup_sparse(aa, batch_features['education_num'], None, combiner="sum")
+    item2vec = tf.nn.embedding_lookup_sparse(pretrain_embeddding, batch_features['education_num'], None, combiner="sum")
 
     wide_features = tf.feature_column.input_layer(batch_features, wide_columns)
     # label = tf.feature_column.input_layer(batch_features, label_columns) # this is  for one hot,however  this doesnot need it
@@ -306,34 +236,6 @@ def read_and_decode_tfrecords(filename_queue):
 
 
     return label, deep_features
-
-def read_and_decode_tfrecords2(filename_queue):
-  reader = tf.TFRecordReader()
-  _, serialized_example = reader.read(filename_queue)
-
-  wide_columns, deep_columns,label = build_model_columns2()
-  occupation=tf.feature_column.embedding_column('occupation',8)
-  all_columns=set(wide_columns+deep_columns+label)
-
-  examples = tf.parse_single_example(
-      serialized_example,
-      features=tf.feature_column.make_parse_example_spec(occupation))
-
-
-  label = examples.pop("income_bracket")
-
-
-  for w in wide_columns:
-      print(w)
-
-
-  wide_features=tf.feature_column.input_layer(examples, wide_columns)
-
-  deep_features = tf.feature_column.input_layer(examples, deep_columns)
-
-
-  return label, examples['occupation']
-
 
 def read_and_decode_csv(filename_queue):
   # Notice that it supports label in the last column only
