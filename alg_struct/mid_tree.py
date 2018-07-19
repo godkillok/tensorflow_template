@@ -1,5 +1,4 @@
-
-#https://blog.csdn.net/l153097889/article/details/48310739
+# https://blog.csdn.net/l153097889/article/details/48310739
 class TreeNode:
     def __init__(self, value=None, leftNode=None, rightNode=None):
         self.value = value
@@ -14,10 +13,10 @@ class Tree:
     def preOrder_1(self):
         if root is not None:
             stackNode = []
-            node=self.root
+            node = self.root
             stackNode.append(node)
-            while stackNode!=[]:
-                node=stackNode.pop(0)
+            while stackNode != []:
+                node = stackNode.pop(0)
                 print()
 
     def preOrder_2(self):
@@ -28,22 +27,40 @@ class Tree:
         3nd put left
         :return:
         '''
-        if root is not None:
+        if self.root is not None:
             stackNode = []
-            node=self.root
+            node = self.root
             stackNode.append(node)
-            while stackNode!=[]:
-                node=stackNode.pop()
-                print(node.value,)
+            while stackNode != []:
+                node = stackNode.pop()
+                print(node.value, )
                 if node.rightNode:
                     stackNode.append(node.rightNode)
                 if node.leftNode:
                     stackNode.append(node.leftNode)
 
-
-
     def midOrder(self):
+        '''
 
+
+        :return:
+        '''
+        if self.root is not None:
+            stack_node = []
+            second = []
+            second.append()
+
+            stack_node.append(self.root)
+            while (stack_node!=[]):
+                node=stack_node.pop()
+                if node.leftNode:
+                    stack_node.append(node.leftNode)
+                    node.leftNode=0
+                else:
+                    # node=stack_node.pop()
+                    print(node.value)
+                    if node.rightNode:
+                        stack_node.append(node.rightNode)
 
 
     def aftOrder(self):
@@ -59,12 +76,14 @@ class Tree:
             node = stackNode.pop()
             if not node.rightNode or node.rightNode is markNode:
                 # node  has no rightNode or node's rightNode has been checked
-                print(node.value,)
+                print(node.value, )
                 markNode = node
                 node = None
             else:
                 stackNode.append(node)
                 node = node.rightNode  ##    #another solution to the middleOrder
+
+
 ##    def midOrder(self):
 ##        if not self.root:
 ##            return
@@ -94,4 +113,4 @@ if __name__ is '__main__':
     root = TreeNode(4, n1, n3)
     tree = Tree(root)
 
-    tree.preOrder_2()
+    tree.midOrder()
