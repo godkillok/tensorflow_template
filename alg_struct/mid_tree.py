@@ -41,47 +41,75 @@ class Tree:
 
     def midOrder(self):
         '''
-
-
         :return:
         '''
         if self.root is not None:
             stack_node = []
             second = []
-            second.append()
+            second.append(self.root)
+            node=self.root
 
-            stack_node.append(self.root)
-            while (stack_node!=[]):
-                node=stack_node.pop()
-                if node.leftNode:
-                    stack_node.append(node.leftNode)
-                    node.leftNode=0
-                else:
-                    # node=stack_node.pop()
-                    print(node.value)
-                    if node.rightNode:
-                        stack_node.append(node.rightNode)
+            while stack_node!=[] or node:
 
+                while node!=0:
+                    stack_node.append(node)
+                    node=node.leftNode
+                node = stack_node.pop()
+                print(node.value)
+
+                node=node.rightNode
+
+#对于一个节点而言，要实现访问顺序为左儿子-右儿子-根节点，可以利用后进先出的栈，
+# 在节点不为空的前提下，依次将根节点，右儿子，左儿子压栈。
+# 故我们需要按照根节点-右儿子-左儿子的顺序遍历树，而我们已经知道先序遍历的顺序是根节
+# 点-左儿子-右儿子，故只需将先序遍历的左右调换并把访问方式打印改为压入另一个栈即可。
+# 最后一起打印栈中的元素。
 
     def aftOrder(self):
         if not self.root:
             return
         stackNode = []
-        markNode = None
+        flag=[]
         node = self.root
         while stackNode or node:
             while node:
                 stackNode.append(node)
-                node = node.leftNode
-            node = stackNode.pop()
-            if not node.rightNode or node.rightNode is markNode:
-                # node  has no rightNode or node's rightNode has been checked
-                print(node.value, )
-                markNode = node
-                node = None
+                flag.append(0)
+                node=node.leftNode
+            node=stackNode[-1]
+            if flag[-1]==0 and node.rightNode:
+                node =node.rightNode
+                flag.append(1)
             else:
-                stackNode.append(node)
-                node = node.rightNode  ##    #another solution to the middleOrder
+                flag.pop()
+                node=stackNode.pop()
+                print(node.value)
+                node = 0
+
+    def BFSOrder(self):
+        '''
+        https://www.cnblogs.com/simplepaul/p/6721687.html
+        http://www.cnblogs.com/LZYY/p/3454778.html
+        1.首先将根节点放入队列中。
+       2.当队列为非空时，循环执行步骤3到步骤5，否则执行6；
+       3.出队列取得一个结点，访问该结点；
+       4.若该结点的左子树为非空，则将该结点的左子树入队列；
+       5.若该结点的右子树为非空，则将该结点的右子树入队列；
+       6.结束。
+        :return:
+        '''
+
+
+        if not self.root:
+            return
+        stack=[]
+        stack.append(self.root)
+        while stack:
+            node=stack.pop(0)
+            if node.leftNode:
+                stack.append(node.leftNode)
+            if  node.rightNode:
+                stack.append(node.rightNode)
 
 
 ##    def midOrder(self):
@@ -113,4 +141,4 @@ if __name__ is '__main__':
     root = TreeNode(4, n1, n3)
     tree = Tree(root)
 
-    tree.midOrder()
+    tree.BFSOrder()
